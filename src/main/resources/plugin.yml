@@ -1,0 +1,6 @@
+name: OrbitalEconomy
+author: AkramL
+version: 1.0-SNAPSHOT
+main: com.akraml.orbital.EconomyPlugin
+description: A simple spigot economy plugin tasked by Orbital Services to pass the freelancer test.
+website: https://github.com/AkramLZ/OrbitalEconomy
