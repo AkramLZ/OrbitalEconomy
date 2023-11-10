@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -64,7 +65,7 @@ public final class EconomyCommands extends BaseCommand {
     public void onPay(final Player player,
                       final String target,
                       final int amount) {
-        final EcoUser user = plugin.getDatabaseService().getUser(player.getUniqueId());
+        final EcoUser user = usersManager.getUser(player.getUniqueId());
         if (user == null) {
             player.sendMessage(color(plugin.getConfig().getString(ConfigurationKeys.MESSAGES_NOT_LOADED_YET)));
             return;
@@ -128,11 +129,9 @@ public final class EconomyCommands extends BaseCommand {
             targetUser.setBalance(amount);
             plugin.getDatabaseService().updateUser(targetUser);
             player.sendMessage(color(
-                    plugin.getConfig().getString(
-                            ConfigurationKeys.MESSAGES_BALANCE_UPDATED
-                                    .replace("{player}", target)
-                                    .replace("{balance}", String.valueOf(amount))
-                    )
+                    plugin.getConfig().getString(ConfigurationKeys.MESSAGES_BALANCE_UPDATED)
+                            .replace("{player}", target)
+                            .replace("{balance}", String.valueOf(amount))
             ));
         }).exceptionally(throwable -> {
             throwable.printStackTrace(System.err);
@@ -144,7 +143,7 @@ public final class EconomyCommands extends BaseCommand {
     @CommandAlias("earn")
     @Description("Earns a random balance between 1 and 5.")
     public void onEarn(final Player player) {
-        final EcoUser user = plugin.getDatabaseService().getUser(player.getUniqueId());
+        final EcoUser user = usersManager.getUser(player.getUniqueId());
         if (user == null) {
             player.sendMessage(color(plugin.getConfig().getString(ConfigurationKeys.MESSAGES_NOT_LOADED_YET)));
             return;
@@ -154,23 +153,21 @@ public final class EconomyCommands extends BaseCommand {
             return;
         }
         long deltaTimeMillis = System.currentTimeMillis() - user.getLastEarn();
+        System.out.println(user.getLastEarn() + ";" + deltaTimeMillis);
         if (deltaTimeMillis < 60000L) {
             long remainTime = (60000L - deltaTimeMillis) / 1000;
             player.sendMessage(color(
-                    plugin.getConfig().getString(
-                            ConfigurationKeys.MESSAGES_EARN_COOLDOWN
-                                    .replace("{time}", String.valueOf(remainTime))
-                    )
+                    plugin.getConfig().getString(ConfigurationKeys.MESSAGES_EARN_COOLDOWN)
+                            .replace("{time}", String.valueOf(remainTime))
             ));
             return;
         }
-        int randomValue = ThreadLocalRandom.current().nextInt(4) + 1;
+        int randomValue = new Random().nextInt(4) + 1;
         user.setBalance(user.getBalance() + randomValue);
+        user.setLastEarn(System.currentTimeMillis());
         player.sendMessage(color(
-                plugin.getConfig().getString(
-                        ConfigurationKeys.MESSAGES_EARNED
-                                .replace("{amount}", String.valueOf(randomValue))
-                )
+                plugin.getConfig().getString(ConfigurationKeys.MESSAGES_EARNED)
+                        .replace("{amount}", String.valueOf(randomValue))
         ));
     }
 
