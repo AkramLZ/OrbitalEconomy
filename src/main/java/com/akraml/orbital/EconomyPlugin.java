@@ -46,10 +46,20 @@ public final class EconomyPlugin extends JavaPlugin implements Listener {
         commandManager.registerCommand(new EconomyCommands());
 
         getServer().getPluginManager().registerEvents(this, this);
+
+        // In case of reload.
+        getServer().getOnlinePlayers().forEach(usersManager::loadUser);
     }
 
     @Override
     public void onDisable() {
+        // In case of reload.
+        getServer().getOnlinePlayers().forEach(player -> {
+            final EcoUser user = usersManager.getUser(player.getUniqueId());
+            if (user != null) {
+                usersManager.unloadUser(user);
+            }
+        });
         databaseService.shutdown();
     }
 
