@@ -7,7 +7,7 @@ public class ConfigurationKeys {
     public static final String MYSQL_DATABASE = "mysql.database";
     public static final String MYSQL_USERNAME = "mysql.username";
     public static final String MYSQL_PASSWORD = "mysql.password";
-    public static final String MYSQL_MAX_POOL_SIZE = "mysql.max-pool.size";
+    public static final String MYSQL_MAX_POOL_SIZE = "mysql.max-pool-size";
 
     /** Messages */
     public static final String MESSAGES_ERROR_OCCURRED = "messages.error-occurred";
