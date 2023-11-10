@@ -18,14 +18,16 @@ public final class DatabaseService {
 
     public boolean connect() {
         final HikariConfig hikariConfig = getHikariConfig();
-        this.dataSource = new HikariDataSource(hikariConfig);
+        try {
+            this.dataSource = new HikariDataSource(hikariConfig);
 
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement statement = connection.prepareStatement(
-                     "CREATE TABLE IF NOT EXISTS economy_data (id UUID PRIMARY KEY NOT NULL, name VARCHAR(16) UNIQUE, balance INT, last_earn BIGINT)"
-             )) {
-            statement.executeUpdate();
-            return true;
+            try (final Connection connection = dataSource.getConnection();
+                 final PreparedStatement statement = connection.prepareStatement(
+                         "CREATE TABLE IF NOT EXISTS economy_data (id UUID PRIMARY KEY NOT NULL, name VARCHAR(16) UNIQUE, balance INT, last_earn BIGINT)"
+                 )) {
+                statement.executeUpdate();
+                return true;
+            }
         } catch (final Exception exception) {
             exception.printStackTrace(System.err);
             return false;
@@ -33,7 +35,7 @@ public final class DatabaseService {
     }
 
     public void shutdown() {
-        dataSource.close();
+        if (dataSource != null && !dataSource.isClosed()) dataSource.close();
     }
 
     private HikariConfig getHikariConfig() {
@@ -48,6 +50,7 @@ public final class DatabaseService {
         hikariConfig.addDataSourceProperty("databaseName", credentials.getDatabase());
         hikariConfig.addDataSourceProperty("user", credentials.getUsername());
         hikariConfig.addDataSourceProperty("password", credentials.getPassword());
+
         return hikariConfig;
     }
 
@@ -81,7 +84,7 @@ public final class DatabaseService {
             try (final ResultSet resultSet = statement.executeQuery()) {
                 if (!resultSet.next()) return null;
                 return EcoUser.builder()
-                        .uuid(UUID.fromString(resultSet.getString("id")))
+                        .uuid(uuid)
                         .name(resultSet.getString("name"))
                         .balance(resultSet.getInt("balance"))
                         .lastEarn(resultSet.getLong("last_earn"))
